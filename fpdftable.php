@@ -59,6 +59,7 @@ class FPDFTable extends FPDF
      */
     public $spacingLine = 1;
 
+    private $encoding;
     private $left;
     private $right; 
     private $top;
@@ -94,11 +95,14 @@ class FPDFTable extends FPDF
      *                            * Legal
      *                            или массивом array(ширина,высота) в единицах измерения $unit
      *                            (default = 'A4')
+     * @param string $encoding    Кодировка документа. По умолчанию - Cyrillic 1251.
+     *                            (default = 'windows-1251')
      */
     public function FPDFTable(
         $orientation = 'P',
         $unit = 'mm',
-        $size = 'A4'
+        $size = 'A4',
+        $encoding = 'windows-1251'
         ) {
         parent::FPDF($orientation, $unit, $size);
         if ($orientation === 'P') {
@@ -106,6 +110,7 @@ class FPDFTable extends FPDF
         } else {
             $this->SetMargins(5, 20, 5);
         }
+        $this->encoding = $encoding;
         $this->_makePageSize();
     }
 
@@ -200,6 +205,9 @@ class FPDFTable extends FPDF
     public function htmltable(&$html, $multipage = 1) {
         $a = $this->AutoPageBreak;
         $this->SetAutoPageBreak(0, $this->bMargin);
+        if(!empty($this->encoding) && mb_strtoupper($this->encoding) !== 'UTF-8') {
+            $html = iconv('UTF-8', $this->encoding, $html);
+        }
         $HTML = explode("<table", $html);
         $oldMargin = $this->cMargin;
         $this->cMargin = 0;
