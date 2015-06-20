@@ -295,7 +295,7 @@ class FPDFTable extends FPDF
          */
         $spacingLine = isset($c['lh']) ? $c['lh'] : $this->spacingLine;
 
-        $maxw = $c['w0'] - $hCellPadding;
+        $maxw = $c['w0'] - $hCellPadding * 2;
         $h = 0;
         $x = $hCellPadding;
 
@@ -326,14 +326,19 @@ class FPDFTable extends FPDF
             }
             $space = $f['space'];
             foreach ($f['line'] as $i=>&$l) {
-                if ($x != $hCellPadding) {
-                    $x += $space;
-                }
                 if (isset($l['str']) && is_array($l['str'])) {
                     foreach ($l['str'] as &$t) {
+                        /*
+                         * $t[0] - строка
+                         * $t[1] - ширина строки
+                         */
                         if (!is_array($t)) {
                             continue;
                         }
+                        /*
+                         * Если это первое слово в строке
+                         * или строка со следующим словом не потребует переноса.
+                         */
                         if ($x == $hCellPadding || $x + $t[1] <= $maxw) {
                             $c['wlinet'][$countline][0] += $t[1];
                             $c['wlinet'][$countline][1]++;
@@ -349,7 +354,7 @@ class FPDFTable extends FPDF
                             $c['autobr'][$countline] = 1;
                             $maxhline = $hl;
                             $countline++;
-                            $x = $t[1] + $space;
+                            $x = $t[1] + $hCellPadding;
                             $c['wlinet'][$countline] = array($t[1], 1);
                         }
                         $t[2] = $countline;
@@ -362,7 +367,7 @@ class FPDFTable extends FPDF
                     $hpos = $maxhline * $spacingLine;
                     $c['hline'][] = $hpos;
                     $h += $hpos;
-                    $c['wlines'][$countline] = $x-$hCellPadding;
+                    $c['wlines'][$countline] = $x - $hCellPadding;
                     $maxhline = $hl;
                     $countline++;
                     $x = $hCellPadding;
@@ -370,7 +375,7 @@ class FPDFTable extends FPDF
                 }
             }
         }
-        $c['wlines'][$countline] = $x - $space - $hCellPadding;
+        $c['wlines'][$countline] = $x - $hCellPadding;
         if ($vCellPadding > 0) {
             if (isset($c['hline'][0])) {
                 $c['hline'][0] += $vCellPadding;
@@ -391,7 +396,7 @@ class FPDFTable extends FPDF
         if ($c['a'] == 'C') {
             $x = ($maxw - $c['wlines'][$line]) / 2;
         } elseif ($c['a'] == 'R') {
-            $x = $maxw - $c['wlines'][$line];
+            $x = $maxw - $c['wlines'][$line] + $hCellPadding;
         } elseif (
             $c['a'] == 'J'
             && $c['wlinet'][$line][1] > 1
