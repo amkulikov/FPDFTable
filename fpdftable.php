@@ -17,7 +17,7 @@ require_once __DIR__.'/lib/htmlparser.php';
  *     * Добавлена настройка междустрочного интервала внутри ячеек атрибутом td.lh
  *     * Междустрочный интервал теперь не фиксированный для всего документа, а пропорционален размеру шрифта
  *
- * @category Frameworks
+ * @category Extensions
  * @package  FPDFTable
  * @author   Alexander Kulikov <amkulikov92@gmail.com>
  * @license  http://www.gnu.org/licenses/gpl.html GNU GPL
