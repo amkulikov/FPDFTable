@@ -108,9 +108,9 @@ class FPDFTable extends FPDF
         ) {
         parent::FPDF($orientation, $unit, $size);
         if ($orientation === 'P') {
-            $this->SetMargins(20, 5, 5);
+            $this->SetMargins(20, 10, 10);
         } else {
-            $this->SetMargins(5, 20, 5);
+            $this->SetMargins(10, 20, 10);
         }
         $this->SetAliasPageCount();
         $this->SetAliasPageNum();
@@ -348,7 +348,7 @@ class FPDFTable extends FPDF
         foreach ($c['font'] as &$f) {
             $this->_setFontText($f);
             $hl = $this->_getLineHeight();
-            if ($maxhline < $hl || $x == $hCellPadding) {
+            if ($maxhline < $hl && $x == $hCellPadding) {
                 $maxhline = $hl;
                 $h += $maxhline * $spacingLine;
                 $c['hline'][] = $hl / 2;
@@ -1143,7 +1143,7 @@ class FPDFTable extends FPDF
                      */
                     if (isset($a['style']) || isset($table['style'][$row])) {
                         $styles = isset($a['style']) ? $a['style'] : $table['style'][$row];
-                        $styles = explode(",", mb_strtoupper($styles));
+                        $styles = explode(",", strtoupper($styles));
                         $c['font'][0]['style'] = '';
                         foreach ($styles AS $style) {
                             $c['font'][0]['style'] .= substr(trim($style), 0, 1);
@@ -1208,6 +1208,7 @@ class FPDFTable extends FPDF
                     $this->_setTextAndSize($c, $f, $this->_html2text($t->value[$i]));
                     break;
                 case 'font':
+                    $fontopen = true;
                     $a = &$t->attribute[$i];
                     $c = &$cell[$row][$col];
                     $c['font'][] = array();
