@@ -215,8 +215,7 @@ class FPDFTable extends FPDF
         if ($this->headerTable) {
             $this->x = $this->left;
             $this->y = 0;
-            $str = str_replace($this->aliasPageNum, $this->PageNo(), $this->headerTable);
-            $this->htmltable($str, 0);
+            $this->htmltable(str_replace($this->aliasPageNum, $this->PageNo(), $this->headerTable), 0);
         }
     }
 
@@ -264,8 +263,7 @@ class FPDFTable extends FPDF
         if ($this->footerTable) {
             $this->x = $this->left;
             $this->y = $this->bottom;
-            $str = str_replace($this->aliasPageNum, $this->PageNo(), $this->footerTable);
-            $this->htmltable($str, 0);
+            $this->htmltable(str_replace($this->aliasPageNum, $this->PageNo(), $this->footerTable), 0);
         }
     }
 
