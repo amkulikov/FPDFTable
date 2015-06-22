@@ -348,7 +348,7 @@ class FPDFTable extends FPDF
         foreach ($c['font'] as &$f) {
             $this->_setFontText($f);
             $hl = $this->_getLineHeight();
-            if ($maxhline < $hl && $x == $hCellPadding) {
+            if ($maxhline == 0 && $x == $hCellPadding) {
                 $maxhline = $hl;
                 $h += $maxhline * $spacingLine;
                 $c['hline'][] = $hl / 2;
