@@ -16,6 +16,7 @@ require_once __DIR__.'/lib/htmlparser.php';
  *     * Добавлена настройка отступов внутри ячеек посредством атрибутов td.hpad и td.vpad
  *     * Добавлена настройка междустрочного интервала внутри ячеек атрибутом td.lh
  *     * Междустрочный интервал теперь не фиксированный для всего документа, а пропорционален размеру шрифта
+ *     * Поддержка атрибута td:flex
  *
  * @category Extensions
  * @package  FPDFTable
@@ -1037,9 +1038,9 @@ class FPDFTable extends FPDF
                      * Ширина ячейки
                      */
                     if (isset($a['width']))  {
-                        $c['w'] = $this->_calWidth($a['width']);
+                        $c['w'] = floatval($a['width']);
                     } elseif (isset($table['width'][$row])) {
-                        $c['w'] = $this->_calWidth($table['width'][$row]);
+                        $c['w'] = floatval($table['width'][$row]);
                     }
 
                     /*
