@@ -714,6 +714,9 @@ class FPDFTable extends FPDF
                             $wc['w'] = 1;
                         }
                     }
+                    if (isset($c['flex']) && $c['flex'] > $wc['flex']) {
+                        $wc['flex'] = $c['flex'];
+                    }
                     if ($c['maw'] < $c['miw']) {
                         $c['maw'] = $c['miw'];
                     }
@@ -999,6 +1002,7 @@ class FPDFTable extends FPDF
                         'color',
                         'colspan',
                         'family',
+                        'flex',
                         'height',
                         'hpad',
                         'lh',
@@ -1036,6 +1040,15 @@ class FPDFTable extends FPDF
                         $c['w'] = $this->_calWidth($a['width']);
                     } elseif (isset($table['width'][$row])) {
                         $c['w'] = $this->_calWidth($table['width'][$row]);
+                    }
+
+                    /*
+                     * Пропорция ячейки
+                     */
+                    if (isset($a['flex']))  {
+                        $c['flex'] = floatval($a['flex']);
+                    } elseif (isset($table['flex'][$row])) {
+                        $c['flex'] = floatval($table['flex'][$row]);
                     }
 
                     /*
@@ -1234,7 +1247,7 @@ class FPDFTable extends FPDF
         $table['wc'] = array_pad(
                             array(),
                             $table['nc'],
-                            array('miw' => 0, 'maw' => 0)
+                            array('miw' => 0, 'maw' => 0, 'flex' => 0)
                             );
         $table['hr'] = array_pad(
                             array(),
@@ -1281,24 +1294,34 @@ class FPDFTable extends FPDF
             $table['w'] = $this->width;
         }
         if (isset($table['w'])) {
-            $wis = $wisa = 0;
-            $list = array();
+            $wis = 0;
+            $woWidth = array();
+            $wFlex = array();
+            $flex = 0;
             for ($i = 0; $i < $nc; $i++) {
                 $wis += $wc[$i]['miw'];
                 if (!isset($wc[$i]['w'])) {
-                    $list[] = $i;
-                    $wisa += $wc[$i]['miw'];
+                    $woWidth[] = $i;
+                }
+                if (isset($wc[$i]['flex']) && $wc[$i]['flex'] > 0) {
+                    $wFlex[] = $i;
+                    $flex += $wc[$i]['flex'];
                 }
             }
             if ($table['w'] > $wis) {
-                if (!count($list)) {
-                    $wi = ($table['w'] - $wis) / $nc;
-                    for ($k = 0; $k < $nc; $k++) {
+                if ($flex > 0) {
+                    $wi = ($table['w'] - $wis) / $flex;
+                    foreach ($wFlex as $k) {
+                        $wc[$k]['miw'] += $wi * $wc[$k]['flex'];
+                    }
+                } elseif (!empty($woWidth)) {
+                    $wi = ($table['w'] - $wis) / count($woWidth);
+                    foreach ($woWidth as $k) {
                         $wc[$k]['miw'] += $wi;
                     }
                 } else {
-                    $wi = ($table['w'] - $wis) / count($list);
-                    foreach ($list as $k) {
+                    $wi = ($table['w'] - $wis) / $nc;
+                    for ($k = 0; $k < $nc; $k++) {
                         $wc[$k]['miw'] += $wi;
                     }
                 }
