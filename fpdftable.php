@@ -21,7 +21,7 @@ require_once __DIR__.'/lib/htmlparser.php';
  * @package  FPDFTable
  * @author   Alexander Kulikov <amkulikov92@gmail.com>
  * @license  http://www.gnu.org/licenses/gpl.html GNU GPL
- * @link     http://github.com
+ * @link     https://github.com/amkulikov/FPDFTable
  */
 class FPDFTable extends FPDF
 {
@@ -59,6 +59,8 @@ class FPDFTable extends FPDF
      */
     public $spacingLine = 1;
 
+    private $aliasPageNum;
+    private $aliasPageCount;
     private $encoding;
     private $left;
     private $right; 
@@ -110,8 +112,29 @@ class FPDFTable extends FPDF
         } else {
             $this->SetMargins(5, 20, 5);
         }
+        $this->SetAliasPageCount();
+        $this->SetAliasPageNum();
         $this->encoding = $encoding;
         $this->_makePageSize();
+    }
+
+    /**
+     * Назначение псевдонима для подстановки количества страниц.   
+     *
+     * @param string $alias Псевдоним. (default = 'pc')
+     */
+    public function SetAliasPageCount($alias = '{pc}') {
+        parent::AliasNbPages($alias);
+        $this->aliasPageCount = $alias;
+    }
+
+    /**
+     * Назначение псевдонима для подстановки номера страницы.   
+     *
+     * @param string $alias Псевдоним. (default = 'pn')
+     */
+    public function SetAliasPageNum($alias = '{pn}') {
+        $this->aliasPageNum = $alias;
     }
 
     /**
@@ -187,11 +210,13 @@ class FPDFTable extends FPDF
      * Отрисовывет содержимое атрибута headerTable, но может быть переопределён для выполнения других действий.
      */
     public function Header() {
+        $page_number = $this->PageNo();
         $this->_makePageSize();
         if ($this->headerTable) {
             $this->x = $this->left;
             $this->y = 0;
-            $this->htmltable($this->headerTable, 0);
+            $str = str_replace($this->aliasPageNum, $this->PageNo(), $this->headerTable);
+            $this->htmltable($str, 0);
         }
     }
 
@@ -202,7 +227,7 @@ class FPDFTable extends FPDF
      * @param  string  &$html     Текст разметки. 
      * @param  integer $multipage Разрешить переносить таблицу, если не умещается на одной странице.
      */
-    public function htmltable(&$html, $multipage = 1) {
+    public function htmltable($html, $multipage = 1) {
         $a = $this->AutoPageBreak;
         $this->SetAutoPageBreak(0, $this->bMargin);
         if(!empty($this->encoding) && mb_strtoupper($this->encoding) !== 'UTF-8') {
@@ -239,7 +264,8 @@ class FPDFTable extends FPDF
         if ($this->footerTable) {
             $this->x = $this->left;
             $this->y = $this->bottom;
-            $this->htmltable($this->footerTable, 0);
+            $str = str_replace($this->aliasPageNum, $this->PageNo(), $this->footerTable);
+            $this->htmltable($str, 0);
         }
     }
 
@@ -276,9 +302,9 @@ class FPDFTable extends FPDF
     private function _calWidth($w) {
         $p = strpos($w,'%');
         if ($p !== false) {
-            return intval(substr($w, 0, $p) * $this->width / 100);
+            return floatval(substr($w, 0, $p) * $this->width / 100);
         } else {
-            return intval($w);
+            return floatval($w);
         }
     }
 
@@ -1009,9 +1035,9 @@ class FPDFTable extends FPDF
                      * Ширина ячейки
                      */
                     if (isset($a['width']))  {
-                        $c['w'] = floatval($a['width']);
+                        $c['w'] = $this->_calWidth($a['width']);
                     } elseif (isset($table['width'][$row])) {
-                        $c['w'] = floatval($table['width'][$row]);
+                        $c['w'] = $this->_calWidth($table['width'][$row]);
                     }
 
                     /*
